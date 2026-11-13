@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тайный Санта</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f2a22; --bg2:#14362c; --card:#f7f1e6; --ink:#1d2a25; --muted:#6b756f;
+    --red:#c8372d; --red2:#a92a22; --gold:#e3b04b; --line:#e3dacb;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh; font-family:Manrope,system-ui,sans-serif; color:var(--ink);
+    background:radial-gradient(1200px 600px at 50% -10%, #1d4a3c 0%, var(--bg) 60%) fixed;
+    display:flex; flex-direction:column; align-items:center; padding:40px 16px 32px;
+  }
+  .snow{position:fixed; inset:0; pointer-events:none; overflow:hidden}
+  .snow i{position:absolute; top:-10px; width:6px; height:6px; border-radius:50%; background:#fff; opacity:.5; animation:fall linear infinite}
+  @keyframes fall{to{transform:translateY(110vh)}}
+  header{text-align:center; color:#f7f1e6; margin-bottom:24px; position:relative}
+  header .tree{font-size:40px; line-height:1}
+  h1{font-family:Unbounded,sans-serif; font-weight:700; font-size:clamp(28px,6vw,40px); margin:8px 0 6px; letter-spacing:-.01em}
+  header p{margin:0; color:#c9d6cf; font-size:15px}
+  .card{
+    position:relative; width:100%; max-width:520px; background:var(--card); border-radius:20px;
+    padding:28px; box-shadow:0 20px 60px rgba(0,0,0,.35);
+  }
+  h2{font-family:Unbounded,sans-serif; font-weight:500; font-size:19px; margin:0 0 6px}
+  .sub{color:var(--muted); font-size:14px; margin:0 0 18px; line-height:1.5}
+  label{display:block; font-size:13px; font-weight:700; margin:0 0 6px; color:var(--ink)}
+  input[type=text]{
+    width:100%; font:inherit; font-size:20px; letter-spacing:.12em; text-transform:uppercase; text-align:center;
+    padding:14px 12px; border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--ink); outline:none;
+  }
+  input[type=text]:focus{border-color:var(--gold)}
+  input.link{font-size:14px; letter-spacing:0; text-transform:none; text-align:left; padding:10px 12px}
+  button{
+    font:inherit; font-weight:700; cursor:pointer; border:0; border-radius:12px; padding:14px 18px;
+    background:var(--red); color:#fff; font-size:16px; transition:background .15s, transform .05s;
+  }
+  button:hover{background:var(--red2)}
+  button:active{transform:translateY(1px)}
+  button.wide{width:100%; margin-top:12px}
+  button.ghost{background:transparent; color:var(--ink); border:1.5px solid var(--line); padding:8px 12px; font-size:13px}
+  button.ghost:hover{background:#efe7d8}
+  .err{color:var(--red); font-size:14px; margin-top:10px; min-height:20px; text-align:center}
+  .reveal{text-align:center; padding:8px 0 4px; animation:pop .4s ease}
+  @keyframes pop{from{opacity:0; transform:scale(.96)}to{opacity:1; transform:none}}
+  .reveal .hi{color:var(--muted); font-size:15px}
+  .reveal .gift{font-size:44px; margin:14px 0 4px}
+  .reveal .lbl{font-size:13px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted)}
+  .reveal .name{font-family:Unbounded,sans-serif; font-weight:700; font-size:clamp(26px,7vw,36px); color:var(--red); margin:6px 0 14px}
+  .reveal .note{font-size:13px; color:var(--muted); line-height:1.5}
+  .people{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 18px}
+  .people span{background:#fff; border:1px solid var(--line); border-radius:99px; padding:4px 10px; font-size:13px}
+  .rows{margin-top:18px; border-top:1px solid var(--line)}
+  .row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line)}
+  .row .who{flex:1; font-weight:700; font-size:14px}
+  .row code{font-family:ui-monospace,Menlo,monospace; font-size:14px; background:#fff; border:1px solid var(--line); border-radius:8px; padding:4px 8px}
+  .warn{background:#fff6dd; border:1px solid #f0dca0; border-radius:12px; padding:10px 12px; font-size:13px; line-height:1.5; margin-top:14px}
+  .switch{margin-top:20px; text-align:center}
+  .switch a{color:#9fb6ab; font-size:13px; text-decoration:none; border-bottom:1px dashed #5d7d70}
+  .switch a:hover{color:#fff}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="snow" id="snow"></div>
+
+<header>
+  <div class="tree">🎄</div>
+  <h1>Тайный Санта</h1>
+  <p>Каждый узнаёт только своего подопечного</p>
+</header>
+
+<!-- Участник -->
+<section class="card" id="view-player">
+  <div id="enter">
+    <h2>Узнать подопечного</h2>
+    <p class="sub">Введите личный код, который вам прислал организатор.</p>
+    <form id="codeForm" autocomplete="off">
+      <label for="code">Ваш код</label>
+      <input type="text" id="code" placeholder="XXXX-XXXX" maxlength="12" spellcheck="false">
+      <button class="wide" type="submit">Узнать, кому дарю 🎁</button>
+      <div class="err" id="codeErr"></div>
+    </form>
+  </div>
+  <div id="result" class="hidden">
+    <div class="reveal">
+      <div class="hi" id="resHi"></div>
+      <div class="gift">🎁</div>
+      <div class="lbl">Вы дарите подарок</div>
+      <div class="name" id="resName"></div>
+      <div class="note">Никому не говорите! Можно закрыть страницу — код сработает и потом.</div>
+      <button class="ghost" style="margin-top:16px" id="hideBtn">Скрыть</button>
+    </div>
+  </div>
+</section>
+
+<!-- Организатор -->
+<section class="card hidden" id="view-org">
+  <h2>Для организатора</h2>
+  <p class="sub">Нажмите «Провести жребий» — страница сама распределит пары по кругу (себе и «друг другу» никто не выпадет). Вы увидите только коды, а не пары. Разошлите каждому его код в личку.</p>
+  <div class="people" id="people"></div>
+  <label for="link">Ссылка на эту страницу (для текста сообщения)</label>
+  <input type="text" class="link" id="link" placeholder="https://claude.ai/…">
+  <button class="wide" id="drawBtn">Провести жребий 🎲</button>
+  <div id="out"></div>
+</section>
+
+<div class="switch"><a href="#" id="switchLink">Я организатор</a></div>
+
+<script>
+const NAMES = ["Олеся","Толик","Федя","Зинаида Павловна","Сергей Геннадьевич","Лера","Витя","Наташа","Рома","Сеня","Женя"];
+const N = NAMES.length;
+const ALPH = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // без похожих символов (0/O, 1/I/L)
+const B = ALPH.length;
+
+// Детерминированное перемешивание чисел (одинаково во всех браузерах)
+function h(x, k){
+  let v = (Math.imul(x >>> 0, 0x9E3779B1) ^ Math.imul(k + 1, 0x85EBCA77)) >>> 0;
+  v ^= v >>> 15; v = Math.imul(v, 0x2C1B3C6D) >>> 0;
+  v ^= v >>> 12; v = Math.imul(v, 0x297A2D39) >>> 0;
+  v ^= v >>> 15;
+  return v >>> 0;
+}
+function rnd(max){ const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % max; }
+
+// Кодирование: соль + замаскированные номера дарителя и получателя + контрольная сумма
+function encode(g, t){
+  const salt = rnd(65536);
+  const gm = (g ^ h(salt, 1)) & 15, tm = (t ^ h(salt, 2)) & 15;
+  const chk = h(salt * 256 + g * 16 + t, 3) & 4095;
+  let v = ((salt * 16 + gm) * 16 + tm) * 4096 + chk;
+  let s = "";
+  for (let i = 0; i < 8; i++){ s = ALPH[v % B] + s; v = Math.floor(v / B); }
+  return s.slice(0,4) + "-" + s.slice(4);
+}
+function decode(code){
+  const s = code.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (s.length !== 8) return null;
+  let v = 0;
+  for (const c of s){ const i = ALPH.indexOf(c); if (i < 0) return null; v = v * B + i; }
+  const chk = v % 4096; v = Math.floor(v / 4096);
+  const tm = v % 16; v = Math.floor(v / 16);
+  const gm = v % 16; const salt = Math.floor(v / 16);
+  if (salt > 65535) return null;
+  const g = (gm ^ h(salt, 1)) & 15, t = (tm ^ h(salt, 2)) & 15;
+  if (g >= N || t >= N || g === t) return null;
+  if ((h(salt * 256 + g * 16 + t, 3) & 4095) !== chk) return null;
+  return { g, t };
+}
+
+// --- Участник ---
+const codeEl = document.getElementById("code");
+document.getElementById("codeForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const r = decode(codeEl.value);
+  const err = document.getElementById("codeErr");
+  if (!r){ err.textContent = "Код не подошёл — проверьте, нет ли опечатки."; return; }
+  err.textContent = "";
+  document.getElementById("resHi").textContent = "Привет, " + NAMES[r.g] + "!";
+  document.getElementById("resName").textContent = NAMES[r.t];
+  document.getElementById("enter").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
+});
+document.getElementById("hideBtn").addEventListener("click", () => {
+  codeEl.value = "";
+  document.getElementById("result").classList.add("hidden");
+  document.getElementById("enter").classList.remove("hidden");
+});
+
+// --- Организатор ---
+document.getElementById("people").innerHTML = NAMES.map(n => "<span>" + n + "</span>").join("");
+
+function draw(){
+  // Случайный порядок, каждый дарит следующему по кругу → один большой цикл
+  const p = [...Array(N).keys()];
+  for (let i = N - 1; i > 0; i--){ const j = rnd(i + 1); [p[i], p[j]] = [p[j], p[i]]; }
+  const codes = new Array(N);
+  for (let i = 0; i < N; i++) codes[p[i]] = encode(p[i], p[(i + 1) % N]);
+  return codes;
+}
+
+document.getElementById("drawBtn").addEventListener("click", () => {
+  const out = document.getElementById("out");
+  if (out.dataset.done && !out.querySelector(".confirm")){
+    const c = document.createElement("div");
+    c.className = "warn confirm";
+    c.innerHTML = 'Перепровести жребий? Старые коды станут несовместимы с новыми — разошлите всем новые. <button class="ghost" id="yes">Да, заново</button>';
+    out.prepend(c);
+    c.querySelector("#yes").onclick = render;
+    return;
+  }
+  if (!out.dataset.done) render();
+});
+
+function render(){
+  const out = document.getElementById("out");
+  const codes = draw();
+  out.dataset.done = "1";
+  out.innerHTML = '<div class="rows">' + NAMES.map((n, i) =>
+    '<div class="row"><span class="who">' + n + '</span><code>' + codes[i] + '</code>' +
+    '<button class="ghost" data-i="' + i + '">Копировать</button></div>').join("") + '</div>' +
+    '<div class="warn">Не вводите чужие коды сами — так вы увидите пару. Не перезапускайте жребий после рассылки.</div>';
+  out.querySelectorAll("button[data-i]").forEach(b => b.addEventListener("click", async () => {
+    const i = +b.dataset.i;
+    const link = document.getElementById("link").value.trim();
+    const msg = "Привет, " + NAMES[i] + "! 🎅 Тайный Санта: " +
+      (link ? "открой " + link + " и введи" : "введи на странице жеребьёвки") +
+      " свой код: " + codes[i] + ". Никому не показывай!";
+    try { await navigator.clipboard.writeText(msg); b.textContent = "Скопировано ✓"; }
+    catch { b.textContent = codes[i]; }
+    setTimeout(() => b.textContent = "Копировать", 1800);
+  }));
+}
+
+// --- Переключение режимов (#org) ---
+function route(){
+  const org = location.hash === "#org";
+  document.getElementById("view-org").classList.toggle("hidden", !org);
+  document.getElementById("view-player").classList.toggle("hidden", org);
+  const a = document.getElementById("switchLink");
+  a.textContent = org ? "Я участник — ввести код" : "Я организатор";
+}
+document.getElementById("switchLink").addEventListener("click", e => {
+  e.preventDefault();
+  if (location.hash === "#org") history.replaceState(null, "", location.pathname + location.search);
+  else location.hash = "org";
+  route();
+});
+window.addEventListener("hashchange", route);
+route();
+
+// Снежинки
+const snow = document.getElementById("snow");
+for (let i = 0; i < 28; i++){
+  const f = document.createElement("i");
+  const s = 3 + Math.random() * 5;
+  f.style.cssText = "left:" + Math.random()*100 + "%;width:" + s + "px;height:" + s + "px;animation-duration:" + (8 + Math.random()*10) + "s;animation-delay:-" + Math.random()*18 + "s;opacity:" + (.2 + Math.random()*.5);
+  snow.appendChild(f);
+}
+</script>
+</body>
+</html>
